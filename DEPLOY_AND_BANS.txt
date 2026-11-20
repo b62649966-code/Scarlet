@@ -1,0 +1,31 @@
+SCARLET — WGSPLUS DEPLOY PACKAGE
+
+Hosting target: wgsplus
+URL: https://wgsplus.web.app
+
+DEPLOY HOSTING (from this folder):
+  firebase deploy --only hosting --project wgsplus
+
+LOGIN VIEW
+- Signed-out users see only the existing animated background and centered frosted-glass sign-in/sign-up card.
+- The home navigation, game cards, chat, and other content are hidden until authentication succeeds.
+- After successful sign-in, the auth card disappears and the normal homepage is shown.
+
+ADMIN ACCESS
+- Admin status is still controlled by Realtime Database /admins/{uid} = true (boolean).
+- Set the admin UID(s) in Firebase Console > Realtime Database > Data.
+- Do not put email addresses as keys.
+
+BANNING
+- Admins can use the Ban button beside an online user, or enter a Firebase Authentication UID in the Admin Panel.
+- Use Unban UID to remove a ban.
+- Ban records are stored at /bans/{uid}.
+- A banned account is signed out immediately if online and denied on the next sign-in.
+- This is a Firebase UID ban, not an IP ban. Creating a different account creates a different UID.
+
+IMPORTANT: DATABASE RULES
+- database.rules.json now includes the /bans rules needed for secure moderation.
+- Hosting deploy does NOT publish database rules.
+- Back up the current Realtime Database rules first.
+- Then publish database.rules.json in Firebase Console > Realtime Database > Rules.
+- Existing rules for profiles, chat, announcements, online status, and admins are included in this file.

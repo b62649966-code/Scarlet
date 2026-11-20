@@ -1,0 +1,1406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Scarlet</title>
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="https://codehs.com/uploads/9b58f74a89630b0563f2a0b4efbf4108"
+  >
+
+  <link
+    href="https://fonts.googleapis.com/css2?family=Shantell+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+    rel="stylesheet"
+  >
+
+  <link rel="stylesheet" href="app.css">
+
+  <style>
+    /* Startup loader */
+
+    #loader {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      z-index: 9999;
+      transition: opacity .5s ease;
+      padding: 24px;
+      overflow-y: auto;
+    }
+
+    #loader.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-icon {
+      width: 96px;
+      height: 96px;
+      object-fit: contain;
+      animation: loaderPulse 1.6s ease-in-out infinite;
+    }
+
+    .loader-text {
+      font-family: 'Shantell Sans', sans-serif;
+      font-size: 1.1rem;
+      color: white;
+    }
+
+    @keyframes loaderPulse {
+      0%, 100% { opacity: .45; }
+      50% { opacity: 1; }
+    }
+
+    /* Sidebar */
+
+    .sidebar {
+      transition: transform .28s ease, opacity .28s ease;
+    }
+
+    body.sidebar-collapsed .sidebar {
+      transform: translateX(-110%);
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #sidebarToggle {
+      position: fixed;
+      bottom: 18px;
+      left: 18px;
+      z-index: 1000;
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      border: 1px solid rgba(255,255,255,.22);
+      background: rgba(0,0,0,.6);
+      color: white;
+      font-size: 18px;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+
+    #sidebarToggle:hover {
+      background: rgba(0,0,139,.6);
+    }
+
+    /* Online counter */
+
+    #onlineCounter {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      z-index: 1100;
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 10px 15px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,.16);
+      background: rgba(5,8,15,.78);
+      color: white;
+      font: 13px 'Shantell Sans', sans-serif;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 5px 20px #0005;
+    }
+
+    .online-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #777;
+      flex-shrink: 0;
+    }
+
+    .online-dot.connected {
+      background: #36df86;
+      box-shadow: 0 0 9px #36df86;
+    }
+
+    /* Chat */
+
+    .chat-container {
+      width: min(750px, 100%);
+      margin: 20px auto;
+      padding: 18px;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 16px;
+      background: rgba(5,8,15,.78);
+      backdrop-filter: blur(15px);
+      box-shadow: 0 10px 40px #0005;
+      color: white;
+    }
+
+    .chat-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid #ffffff20;
+    }
+
+    .chat-header h2 {
+      margin: 0;
+      font-size: 19px;
+    }
+
+    .chat-status {
+      font-size: 11px;
+      color: #36df86;
+    }
+
+    #chatMessages {
+      height: 350px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 15px 4px;
+      scroll-behavior: smooth;
+    }
+
+    .chat-message {
+      max-width: 85%;
+      padding: 10px 13px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.09);
+      overflow-wrap: anywhere;
+    }
+
+    .chat-message.own {
+      align-self: flex-end;
+      background: rgba(55,110,255,.25);
+      border: 1px solid rgba(70,130,255,.25);
+    }
+
+    .message-meta {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 5px;
+      font-size: 11px;
+      color: #aab7cb;
+    }
+
+    .message-name {
+      color: #82aaff;
+      font-weight: bold;
+    }
+
+    .message-text {
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+
+    #typingIndicator {
+      min-height: 20px;
+      padding-left: 5px;
+      color: #9daec6;
+      font-size: 11px;
+      font-style: italic;
+    }
+
+    .chat-input-area {
+      display: flex;
+      gap: 9px;
+      padding-top: 12px;
+      border-top: 1px solid #ffffff20;
+    }
+
+    #chatInput {
+      flex: 1;
+      min-width: 0;
+      padding: 12px;
+      border-radius: 9px;
+      border: 1px solid #ffffff25;
+      background: rgba(255,255,255,.08);
+      color: white;
+      outline: none;
+      font: 13px 'Shantell Sans', sans-serif;
+    }
+
+    #chatInput:focus {
+      border-color: #548cff;
+    }
+
+    #sendMessage {
+      padding: 10px 17px;
+      border: none;
+      border-radius: 9px;
+      background: #356eff;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    #sendMessage:hover {
+      background: #5687ff;
+    }
+
+    #sendMessage:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+
+    .chat-error {
+      color: #ff8585;
+      font-size: 12px;
+      padding-top: 8px;
+    }
+
+    .chat-empty {
+      margin: auto;
+      color: #9daec6;
+      font-size: 13px;
+    }
+
+    .username-controls {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    #usernameInput {
+      flex: 1;
+      min-width: 0;
+      padding: 9px 11px;
+      border-radius: 8px;
+      border: 1px solid #ffffff25;
+      background: rgba(255,255,255,.08);
+      color: white;
+      outline: none;
+      font: 12px 'Shantell Sans', sans-serif;
+    }
+
+    #saveUsername {
+      padding: 9px 13px;
+      border: none;
+      border-radius: 8px;
+      background: #356eff;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    /* Startup diagnostics */
+
+    #startupLogs {
+      width: min(520px, 92vw);
+      max-height: 190px;
+      overflow-y: auto;
+      padding: 12px 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 10px;
+      background: rgba(255,255,255,.055);
+      color: #b9c7d9;
+      text-align: left;
+      font: 12px/1.7 Consolas, monospace;
+    }
+
+    .startup-log-line {
+      overflow-wrap: anywhere;
+    }
+
+    .startup-log-line.ok {
+      color: #54e69a;
+    }
+
+    .startup-log-line.error {
+      color: #ff8585;
+    }
+
+    #startupError {
+      display: none;
+      width: min(520px, 92vw);
+      text-align: center;
+      color: #fff;
+    }
+
+    #startupError p {
+      margin: 10px 0 16px;
+      color: #ffb0b0;
+      line-height: 1.5;
+    }
+
+    #startupRetry {
+      padding: 10px 20px;
+      border: 0;
+      border-radius: 9px;
+      background: #356eff;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    /* Online users */
+
+    #onlineUsersPanel {
+      position: fixed;
+      top: 68px;
+      right: 18px;
+      z-index: 1100;
+      width: 210px;
+      max-height: 260px;
+      overflow: hidden;
+      padding: 12px;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 10px;
+      background: rgba(5,8,15,.82);
+      color: white;
+      backdrop-filter: blur(12px);
+      box-shadow: 0 5px 20px #0005;
+      font: 12px 'Shantell Sans', sans-serif;
+    }
+
+    #onlineUsersPanel h3 {
+      margin: 0 0 9px;
+      font-size: 13px;
+    }
+
+    #onlineUsersList {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      max-height: 190px;
+      overflow-y: auto;
+      overflow-wrap: anywhere;
+    }
+
+    .online-user {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: #dce7f7;
+    }
+
+    .online-user::before {
+      content: '';
+      width: 7px;
+      height: 7px;
+      flex: 0 0 7px;
+      border-radius: 50%;
+      background: #36df86;
+      box-shadow: 0 0 7px #36df86;
+    }
+
+    .online-empty {
+      color: #9daec6;
+    }
+
+    /* Full-screen tab loading meme */
+
+    .tab-gif-toast {
+      position: fixed;
+      inset: 0;
+      z-index: 1500;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      padding: 24px;
+      background: rgba(0, 0, 0, 0.88);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .25s ease;
+    }
+
+    .tab-gif-toast.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .tab-gif-toast img {
+      display: block;
+      width: min(420px, 85vw);
+      max-height: min(55vh, 420px);
+      object-fit: contain;
+      border-radius: 14px;
+      border: 2px solid rgba(255,255,255,.18);
+      box-shadow: 0 16px 50px rgba(0,0,0,.55);
+      background: #111;
+    }
+
+    .tab-gif-toast::after {
+      content: "Loading...";
+      font-family: 'Shantell Sans', sans-serif;
+      font-size: 1.05rem;
+      color: #fff;
+      letter-spacing: 0.04em;
+      animation: loaderPulse 1.4s ease-in-out infinite;
+    }
+
+    @media(max-width: 600px) {
+      #chatMessages {
+        height: 300px;
+      }
+
+      .chat-container {
+        padding: 12px;
+      }
+
+      #onlineCounter {
+        top: 12px;
+        right: 12px;
+      }
+
+      #onlineUsersPanel {
+        top: 60px;
+        right: 12px;
+        width: 175px;
+      }
+    }
+  </style>
+</head>
+
+<body class="auth-locked">
+  <div id="announcementBanner" class="announcement-banner" hidden role="status">
+    <span id="announcementText"></span>
+    <button id="dismissAnnouncement" type="button" aria-label="Dismiss announcement">×</button>
+  </div>
+
+
+  <!-- Loading Screen -->
+
+  <div id="loader">
+    <img
+      src="538b8e620e37cf251870b6c9d4f86fc4-removebg-preview.png"
+      alt="Scarlet"
+      class="loader-icon"
+      onerror="this.src='https://codehs.com/uploads/9b58f74a89630b0563f2a0b4efbf4108'"
+    >
+
+    <div class="loader-text" id="startupTitle">
+      Starting Scarlet...
+    </div>
+
+    <div id="startupLogs" aria-live="polite">
+      <div class="startup-log-line">
+        [BOOT] Preparing startup...
+      </div>
+    </div>
+
+    <div id="startupError">
+      <h2>Connection failed</h2>
+      <p>Oops, looks like my database crashed. Try again later!</p>
+      <button id="startupRetry" type="button">Try Again</button>
+    </div>
+  </div>
+
+  <!-- Full-screen Auth Gate (blocks entire app until signed in) -->
+  <div id="authGate" class="auth-gate" aria-live="polite">
+    <div class="auth-gate-card">
+      <img
+        class="auth-gate-logo"
+        src="538b8e620e37cf251870b6c9d4f86fc4-removebg-preview.png"
+        alt="Scarlet"
+        onerror="this.src='https://codehs.com/uploads/9b58f74a89630b0563f2a0b4efbf4108'"
+      >
+      <h1>Scarlet</h1>
+      <p class="auth-gate-sub">Sign in to continue. Chat, games, and the community unlock after you log in.</p>
+
+      <form id="emailAuthForm" class="auth-form">
+        <input id="authEmail" type="email" autocomplete="email" placeholder="Email address" required>
+        <input id="authPassword" type="password" autocomplete="current-password" minlength="6" placeholder="Password (at least 6 characters)" required>
+        <div class="auth-actions">
+          <button type="submit" id="signInButton">Log In</button>
+          <button type="button" id="signUpButton">Sign Up</button>
+        </div>
+      </form>
+
+      <div class="auth-divider"><span>or</span></div>
+
+      <button type="button" id="googleSignIn" class="google-button">
+        <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.3 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.5-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 16 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.3 35.3 26.8 36 24 36c-5.3 0-9.7-3.3-11.3-8H6.3C9.7 39.7 16.3 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.1 5.5l.1.1 6.2 5.2C39.2 36.3 44 31 44 24c0-1.3-.1-2.5-.4-3.5z"/></svg>
+        Continue with Google
+      </button>
+
+      <div id="authError" class="chat-error auth-gate-error" role="status"></div>
+    </div>
+  </div>
+
+  <!-- Online Counter (only visible when signed in) -->
+
+  <div id="onlineCounter" hidden>
+    <span class="online-dot" id="onlineDot"></span>
+    <span id="onlineText">Connecting...</span>
+  </div>
+
+  <aside id="onlineUsersPanel" aria-label="People online" hidden>
+    <h3>
+      People Online
+      <span id="onlineUsersCount">(0)</span>
+    </h3>
+
+    <div id="onlineUsersList">
+      <span class="online-empty">Connecting...</span>
+    </div>
+  </aside>
+
+  <!-- Background -->
+
+  <div class="bg-wrap">
+    <video id="bg-video" autoplay loop muted playsinline>
+      <source
+        src="https://codehs.com/uploads/996a326e138f2f116f16252626d866c3"
+        type="video/mp4"
+      >
+    </video>
+  </div>
+
+  <div id="overlay"></div>
+
+  <!-- Header -->
+
+  <header>
+    <div class="logo-placeholder">
+      <span>Scarlet Logo</span>
+    </div>
+  </header>
+
+  <!-- Sidebar -->
+
+  <nav class="sidebar">
+    <h2>Menu</h2>
+
+    <button type="button" class="tab active" data-tab="home">
+      Home
+    </button>
+
+    <button type="button" class="tab" data-tab="games">
+      Games
+    </button>
+
+    <button type="button" class="tab" data-tab="chat">
+      Chat
+    </button>
+
+    <button type="button" class="tab" data-tab="about">
+      About
+    </button>
+
+    <button type="button" class="tab" data-tab="updates">
+      Update Log
+    </button>
+  </nav>
+
+  <button
+    id="sidebarToggle"
+    type="button"
+    aria-label="Minimize menu"
+    aria-expanded="true"
+  >☰</button>
+
+  <!-- Main Content -->
+
+  <main>
+
+    <!-- Home -->
+
+    <section id="home" class="panel active">
+      <div class="hero-card">
+        <header class="hero-header">
+          <h1 class="title">Scarlet</h1>
+        </header>
+
+        <form id="searchForm" class="search">
+          <input
+            type="search"
+            id="searchInput"
+            placeholder="Search Beka's database..."
+            aria-label="Search Beka's database"
+            autocomplete="off"
+          >
+
+          <button type="submit">Search</button>
+        </form>
+
+        <p id="searchMsg" class="search-msg" role="status"></p>
+      </div>
+    </section>
+
+    <!-- Games -->
+
+    <section id="games" class="panel">
+      <h2 class="section-title">Games</h2>
+      <div class="grid" id="gameGrid"></div>
+    </section>
+
+    <!-- Chat -->
+
+    <section id="chat" class="panel">
+      <h2 class="section-title">Scarlet Community</h2>
+      <div class="chat-container">
+        <section id="chatApp">
+          <div class="chat-header">
+            <h2>Global Chat</h2>
+            <span class="chat-status" id="chatConnection">Connecting...</span>
+            <div class="chat-account-row">
+              <span id="signedInAs"></span>
+              <button type="button" id="signOutButton" class="secondary-button">Sign Out</button>
+            </div>
+            <div class="username-controls">
+              <input id="usernameInput" type="text" maxlength="20" minlength="2"
+                placeholder="Choose a username..." autocomplete="off" aria-label="Your chat username">
+              <button id="saveUsername" type="button">Save Name</button>
+            </div>
+          </div>
+
+          <div id="adminPanel" class="admin-panel" hidden>
+            <div class="admin-panel-heading">
+              <h3>Admin Panel</h3><span>Administrator tools</span>
+            </div>
+            <form id="announcementForm" class="announcement-form">
+              <input id="announcementInput" type="text" maxlength="240"
+                placeholder="Write an announcement for everyone..." required>
+              <button type="submit">Publish</button>
+            </form>
+            <div class="admin-ban-tools">
+              <h4>Member moderation</h4>
+              <input id="banTargetUid" type="text" autocomplete="off"
+                placeholder="User Firebase UID" aria-label="User Firebase UID">
+              <input id="banReason" type="text" maxlength="160" autocomplete="off"
+                placeholder="Reason (optional)" aria-label="Ban reason">
+              <div class="admin-ban-actions">
+                <button type="button" id="banUserButton">Ban UID</button>
+                <button type="button" id="unbanUserButton" class="unban-button">Unban UID</button>
+              </div>
+              <p class="admin-ban-help">You can also ban someone directly from the People Online list.</p>
+            </div>
+            <p id="adminStatus" class="admin-status" aria-live="polite"></p>
+          </div>
+
+          <div id="chatMessages" aria-live="polite">
+            <div class="chat-empty">Loading messages...</div>
+          </div>
+          <div id="typingIndicator"></div>
+          <form id="chatForm" class="chat-input-area">
+            <input id="imageInput" type="file" accept="image/png,image/jpeg,image/gif,image/webp" hidden>
+            <button type="button" id="attachImage" class="attach-button" title="Attach an image" aria-label="Attach image">＋</button>
+            <input id="chatInput" type="text" maxlength="300" placeholder="Type a message..."
+              autocomplete="off" disabled>
+            <button id="sendMessage" type="submit" disabled>Send</button>
+          </form>
+          <div id="uploadStatus" class="upload-status" aria-live="polite"></div>
+          <div id="chatError" class="chat-error" role="status"></div>
+        </section>
+      </div>
+    </section>
+
+    <!-- About -->
+
+    <section id="about" class="panel">
+      <h2 class="section-title">About Scarlet</h2>
+
+      <p>
+        For fun background inspired by petazah!!
+        Games are web ported. Core Ball is now available
+        in the Games tab.
+      </p>
+    </section>
+
+    <!-- Update Log -->
+
+    <section id="updates" class="panel">
+      <h2 class="section-title">Update Log</h2>
+
+      <div class="update-log">
+        <article class="update-entry">
+          <h3>November 19, 2026</h3>
+
+          <ul>
+            <li>Added the Scarlet update log.</li>
+            <li>Added random reaction GIFs.</li>
+            <li>Added customizable FIH game.</li>
+            <li>Added Core Ball game.</li>
+            <li>Added Firebase community chat.</li>
+            <li>Added real-time online counter.</li>
+            <li>Added live typing indicators.</li>
+          </ul>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Full-screen Tab Loading Meme -->
+
+  <div
+    id="tabGifToast"
+    class="tab-gif-toast"
+    aria-live="polite"
+    aria-label="Loading"
+  >
+    <img id="tabGifImage" alt="Loading meme">
+  </div>
+
+  <!-- Scarlet Game Library -->
+
+  <script src="app.js"></script>
+
+  <!-- Startup and Sidebar -->
+
+  <script>
+    (() => {
+      const loader = document.getElementById('loader');
+      const logs = document.getElementById('startupLogs');
+      const title = document.getElementById('startupTitle');
+      const errorBox = document.getElementById('startupError');
+      const retryButton = document.getElementById('startupRetry');
+
+      window.ScarletStartup = {
+        log(message, type = '') {
+          if (!logs) return;
+
+          const line = document.createElement('div');
+          line.className = 'startup-log-line ' + type;
+          line.textContent =
+            '[' + new Date().toLocaleTimeString() + '] ' + message;
+
+          logs.appendChild(line);
+          logs.scrollTop = logs.scrollHeight;
+        },
+
+        title(message) {
+          if (title) title.textContent = message;
+        },
+
+        success() {
+          this.log(
+            'Firebase database connected successfully.',
+            'ok'
+          );
+
+          this.title('Scarlet is ready!');
+
+          if (errorBox) {
+            errorBox.style.display = 'none';
+          }
+
+          setTimeout(() => {
+            if (!loader) return;
+
+            loader.classList.add('hide');
+
+            setTimeout(() => {
+              loader.remove();
+            }, 500);
+          }, 700);
+        },
+
+        failure(message) {
+          this.log(message, 'error');
+          this.title('Unable to start Scarlet');
+
+          if (errorBox) {
+            errorBox.style.display = 'block';
+          }
+        },
+
+        reset() {
+          if (!loader) return;
+
+          loader.classList.remove('hide');
+
+          if (errorBox) {
+            errorBox.style.display = 'none';
+          }
+
+          if (logs) {
+            logs.replaceChildren();
+          }
+
+          this.log('Retrying startup...');
+          this.title('Starting Scarlet...');
+        }
+      };
+
+      retryButton?.addEventListener('click', () => {
+        if (typeof window.ScarletRetry === 'function') {
+          window.ScarletRetry();
+        }
+      });
+
+    })();
+
+    // Sidebar toggle
+
+    const sidebarToggle =
+      document.getElementById('sidebarToggle');
+
+    sidebarToggle.addEventListener('click', () => {
+      const collapsed =
+        document.body.classList.toggle('sidebar-collapsed');
+
+      sidebarToggle.setAttribute(
+        'aria-expanded',
+        String(!collapsed)
+      );
+
+      sidebarToggle.setAttribute(
+        'aria-label',
+        collapsed ? 'Open menu' : 'Minimize menu'
+      );
+    });
+  </script>
+
+  <!-- Firebase Community System -->
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-app.js";
+    import {
+      getDatabase, ref, push, set, remove, get, onValue, query, orderByChild,
+      limitToLast, serverTimestamp, onDisconnect
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-database.js";
+    import {
+      getAuth, onAuthStateChanged, createUserWithEmailAndPassword,
+      signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup, signOut
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-auth.js";
+    import {
+      getStorage, ref as storageRef, uploadBytes, getDownloadURL
+    } from "https://www.gstatic.com/firebasejs/11.0.2/firebase-storage.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDYEKS7Tstm-Q_Niizyr8jwTkP2ZZVyTvg",
+      authDomain: "wgsplus.firebaseapp.com",
+      databaseURL: "https://wgsplus-default-rtdb.firebaseio.com",
+      projectId: "wgsplus",
+      storageBucket: "wgsplus.firebasestorage.app",
+      messagingSenderId: "434338483459",
+      appId: "1:434338483459:web:8e53388d22226bfe696d36",
+      measurementId: "G-3R38F5SZHW"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+    const googleProvider = new GoogleAuthProvider();
+    const startup = window.ScarletStartup;
+
+    const $ = id => document.getElementById(id);
+    const authGate = $('authGate');
+    const authError = $('authError'), chatError = $('chatError');
+    const emailForm = $('emailAuthForm');
+    const authEmail = $('authEmail'), authPassword = $('authPassword');
+    const signUpButton = $('signUpButton'), googleButton = $('googleSignIn');
+    const signOutButton = $('signOutButton');
+    const messagesBox = $('chatMessages'), chatForm = $('chatForm');
+    const chatInput = $('chatInput'), sendButton = $('sendMessage');
+    const imageInput = $('imageInput'), attachImage = $('attachImage');
+    const uploadStatus = $('uploadStatus'), typingIndicator = $('typingIndicator');
+    const usernameInput = $('usernameInput'), saveUsernameButton = $('saveUsername');
+    const signedInAs = $('signedInAs');
+    const adminPanel = $('adminPanel'), announcementForm = $('announcementForm');
+    const announcementInput = $('announcementInput'), adminStatus = $('adminStatus');
+    const banTargetUid = $('banTargetUid'), banReason = $('banReason');
+    const banUserButton = $('banUserButton'), unbanUserButton = $('unbanUserButton');
+    const announcementBanner = $('announcementBanner'), announcementText = $('announcementText');
+    const dismissAnnouncement = $('dismissAnnouncement');
+    const onlineCounter = $('onlineCounter'), onlineUsersPanel = $('onlineUsersPanel');
+
+    let currentUser = null, displayName = '', typingTimer = null;
+    let adminMode = false, messageCount = 0, activeAnnouncementId = null;
+    let announcementDismissed = false;
+    let blockedMessage = '';
+    let onlineListener = null, messagesListener = null, adminListener = null, banListener = null;
+
+    const messagesQuery = query(ref(db, 'messages'), orderByChild('timestamp'), limitToLast(60));
+    const safeText = value => String(value || '').slice(0, 300);
+
+    function setError(message='') { if (chatError) chatError.textContent = message; }
+    function setAuthError(message='') { if (authError) authError.textContent = message; }
+
+    function showAuthGate() {
+      if (authGate) authGate.classList.remove('auth-gate-hidden');
+      if (onlineCounter) onlineCounter.hidden = true;
+      if (onlineUsersPanel) onlineUsersPanel.hidden = true;
+      document.body.classList.add('auth-locked');
+    }
+
+    function hideAuthGate() {
+      if (authGate) authGate.classList.add('auth-gate-hidden');
+      if (onlineCounter) onlineCounter.hidden = false;
+      if (onlineUsersPanel) onlineUsersPanel.hidden = false;
+      document.body.classList.remove('auth-locked');
+    }
+
+    function friendlyError(error) {
+      const code = error?.code || '';
+      const messages = {
+        'auth/email-already-in-use': 'That email already has an account. Log in instead.',
+        'auth/invalid-email': 'Enter a valid email address.',
+        'auth/weak-password': 'Use a password with at least 6 characters.',
+        'auth/invalid-credential': 'Email or password is incorrect.',
+        'auth/popup-closed-by-user': 'Google sign-in was closed before finishing.',
+        'auth/unauthorized-domain': 'Add this website domain in Firebase Authentication → Settings → Authorized domains.',
+        'auth/operation-not-allowed': 'Enable this sign-in provider in Firebase Authentication.',
+        'storage/unauthorized': 'Image upload was blocked by Storage Rules.',
+        'database/permission-denied': 'Firebase denied this action. Check the Realtime Database Rules.'
+      };
+      return messages[code] || error?.message || 'Something went wrong.';
+    }
+
+    async function emailSignIn(event) {
+      event.preventDefault();
+      setAuthError('');
+      try {
+        await signInWithEmailAndPassword(auth, authEmail.value.trim(), authPassword.value);
+      } catch (error) { setAuthError(friendlyError(error)); }
+    }
+    emailForm.addEventListener('submit', emailSignIn);
+
+    signUpButton.addEventListener('click', async () => {
+      setAuthError('');
+      if (!emailForm.reportValidity()) return;
+      try {
+        await createUserWithEmailAndPassword(auth, authEmail.value.trim(), authPassword.value);
+      } catch (error) { setAuthError(friendlyError(error)); }
+    });
+
+    googleButton.addEventListener('click', async () => {
+      setAuthError('');
+      try { await signInWithPopup(auth, googleProvider); }
+      catch (error) { setAuthError(friendlyError(error)); }
+    });
+
+    signOutButton.addEventListener('click', async () => {
+      try {
+        if (currentUser) {
+          await remove(ref(db, 'online/' + currentUser.uid)).catch(() => {});
+          await remove(ref(db, 'typing/' + currentUser.uid)).catch(() => {});
+        }
+        await signOut(auth);
+      } catch (error) { setError(friendlyError(error)); }
+    });
+
+    function timeLabel(timestamp) {
+      return timestamp ? new Date(timestamp).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'Just now';
+    }
+
+    function renderMessages(snapshot) {
+      const rows = [];
+      snapshot.forEach(child => rows.push({ id: child.key, ...child.val() }));
+      rows.sort((a,b) => (a.timestamp || 0) - (b.timestamp || 0));
+      messagesBox.replaceChildren();
+
+      if (!rows.length) {
+        const empty = document.createElement('div');
+        empty.className = 'chat-empty';
+        empty.textContent = 'No messages yet. Start the conversation!';
+        messagesBox.appendChild(empty);
+      }
+
+      for (const message of rows) {
+        const wrapper = document.createElement('article');
+        wrapper.className = 'chat-message' + (message.uid === currentUser?.uid ? ' own' : '');
+        const meta = document.createElement('div'); meta.className = 'message-meta';
+        const name = document.createElement('span'); name.className = 'message-name';
+        name.textContent = message.name || 'Member';
+        const time = document.createElement('span'); time.textContent = timeLabel(message.timestamp);
+        meta.append(name,time); wrapper.appendChild(meta);
+
+        if (message.text) {
+          const body = document.createElement('div');
+          body.className = 'message-text'; body.textContent = safeText(message.text);
+          wrapper.appendChild(body);
+        }
+        if (message.imageUrl) {
+          const image = document.createElement('img');
+          image.className = 'chat-image'; image.src = message.imageUrl;
+          image.alt = 'Image shared in chat'; image.loading = 'lazy';
+          image.addEventListener('click', () => window.open(message.imageUrl, '_blank', 'noopener'));
+          wrapper.appendChild(image);
+        }
+        messagesBox.appendChild(wrapper);
+      }
+      if (rows.length > messageCount) messagesBox.scrollTop = messagesBox.scrollHeight;
+      messageCount = rows.length;
+    }
+
+    async function saveProfileName() {
+      const next = usernameInput.value.trim();
+      if (next.length < 2 || next.length > 20) {
+        setError('Username must be between 2 and 20 characters.'); return;
+      }
+      displayName = next;
+      try {
+        await set(ref(db, 'profiles/' + currentUser.uid), {
+          name: displayName, email: currentUser.email || null, updatedAt: serverTimestamp()
+        });
+        await set(ref(db, 'online/' + currentUser.uid), {
+          name: displayName, lastSeen: Date.now()
+        });
+        setError('Username saved.');
+      } catch (error) { setError(friendlyError(error)); }
+    }
+    saveUsernameButton.addEventListener('click', saveProfileName);
+
+    async function sendMessage(event) {
+      event.preventDefault();
+      if (!currentUser) return;
+      const text = chatInput.value.trim();
+      if (!text) return;
+      sendButton.disabled = true;
+      try {
+        await push(ref(db, 'messages'), {
+          uid: currentUser.uid, name: displayName, text,
+          timestamp: serverTimestamp()
+        });
+        chatInput.value = '';
+        await remove(ref(db, 'typing/' + currentUser.uid));
+        setError('');
+      } catch (error) { setError(friendlyError(error)); }
+      finally { sendButton.disabled = false; chatInput.focus(); }
+    }
+    chatForm.addEventListener('submit', sendMessage);
+
+    attachImage.addEventListener('click', () => {
+      if (!currentUser) {
+        uploadStatus.textContent = 'Sign in first to share images.';
+        return;
+      }
+      imageInput.click();
+    });
+    imageInput.addEventListener('change', async () => {
+      const file = imageInput.files?.[0];
+      if (!file || !currentUser) return;
+      const allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      if (!allowed.includes(file.type)) {
+        uploadStatus.textContent = 'Only JPG, PNG, GIF, or WebP images are allowed.';
+        imageInput.value = '';
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        uploadStatus.textContent = 'Image is too large. Max size is 5 MB.';
+        imageInput.value = '';
+        return;
+      }
+      attachImage.disabled = true;
+      uploadStatus.textContent = 'Uploading image…';
+      try {
+        const cleanName = (file.name || 'image').replace(/[^a-zA-Z0-9._-]/g, '_').slice(-80);
+        const path = `chatImages/${currentUser.uid}/${Date.now()}_${cleanName}`;
+        const fileRef = storageRef(storage, path);
+        await uploadBytes(fileRef, file, { contentType: file.type });
+        const imageUrl = await getDownloadURL(fileRef);
+        // Image-only messages: do not send an empty text field (rules accept imageUrl alone)
+        await push(ref(db, 'messages'), {
+          uid: currentUser.uid,
+          name: displayName,
+          imageUrl,
+          timestamp: serverTimestamp()
+        });
+        uploadStatus.textContent = 'Image sent ✓';
+        setTimeout(() => { if (uploadStatus.textContent === 'Image sent ✓') uploadStatus.textContent = ''; }, 2500);
+      } catch (error) {
+        console.error('Image upload failed:', error);
+        uploadStatus.textContent = friendlyError(error);
+      } finally {
+        attachImage.disabled = false;
+        imageInput.value = '';
+      }
+    });
+
+    chatInput.addEventListener('input', async () => {
+      if (!currentUser) return;
+      clearTimeout(typingTimer);
+      if (chatInput.value.trim()) {
+        await set(ref(db, 'typing/' + currentUser.uid), {
+          name: displayName,
+          typing: true,
+          updatedAt: Date.now()
+        }).catch(() => {});
+        typingTimer = setTimeout(() => remove(ref(db, 'typing/' + currentUser.uid)).catch(() => {}), 2500);
+      } else {
+        remove(ref(db, 'typing/' + currentUser.uid)).catch(() => {});
+      }
+    });
+    chatInput.addEventListener('blur', () => {
+      clearTimeout(typingTimer);
+      if (currentUser) remove(ref(db, 'typing/' + currentUser.uid)).catch(()=>{});
+    });
+
+    onValue(ref(db, 'typing'), snapshot => {
+      const names = [];
+      snapshot.forEach(child => {
+        const item = child.val();
+        if (child.key !== currentUser?.uid && item?.typing) names.push(item.name || 'Someone');
+      });
+      typingIndicator.textContent = names.length === 1 ? names[0] + ' is typing...' :
+        names.length > 1 ? names.length + ' people are typing...' : '';
+    });
+
+    function showAnnouncement(id, data) {
+      activeAnnouncementId = id;
+      announcementText.textContent = data.text || '';
+      announcementBanner.hidden = !data.text || announcementDismissed;
+    }
+    onValue(ref(db, 'announcements/current'), snapshot => {
+      const data = snapshot.val();
+      if (data?.text) showAnnouncement(snapshot.key || 'current', data);
+      else { activeAnnouncementId = null; announcementBanner.hidden = true; }
+    });
+    dismissAnnouncement.addEventListener('click', () => {
+      announcementDismissed = true;
+      announcementBanner.hidden = true;
+    });
+
+    announcementForm.addEventListener('submit', async event => {
+      event.preventDefault();
+      if (!adminMode) return;
+      const text = announcementInput.value.trim();
+      if (!text || text.length > 240) return;
+      try {
+        await set(ref(db, 'announcements/current'), {
+          text, by: currentUser.uid, byName: displayName, timestamp: serverTimestamp()
+        });
+        announcementInput.value = '';
+        adminStatus.textContent = 'Announcement published to everyone.';
+      } catch (error) { adminStatus.textContent = friendlyError(error); }
+    });
+
+    async function banMember(uid, reason = '') {
+      const targetUid = String(uid || '').trim();
+      if (!adminMode || !currentUser) throw new Error('Admin access is required.');
+      if (!targetUid || targetUid.length < 5 || targetUid.length > 128) {
+        throw new Error('Enter a valid Firebase user UID.');
+      }
+      if (targetUid === currentUser.uid) throw new Error('You cannot ban your own account.');
+      await set(ref(db, 'bans/' + targetUid), {
+        banned: true,
+        by: currentUser.uid,
+        reason: String(reason || '').trim().slice(0, 160),
+        timestamp: Date.now()
+      });
+      return targetUid;
+    }
+
+    async function unbanMember(uid) {
+      const targetUid = String(uid || '').trim();
+      if (!adminMode || !currentUser) throw new Error('Admin access is required.');
+      if (!targetUid || targetUid.length < 5 || targetUid.length > 128) {
+        throw new Error('Enter a valid Firebase user UID.');
+      }
+      await remove(ref(db, 'bans/' + targetUid));
+      return targetUid;
+    }
+
+    banUserButton?.addEventListener('click', async () => {
+      try {
+        const uid = await banMember(banTargetUid.value, banReason.value);
+        adminStatus.textContent = 'Banned user: ' + uid;
+        banTargetUid.value = '';
+        banReason.value = '';
+      } catch (error) { adminStatus.textContent = friendlyError(error); }
+    });
+
+    unbanUserButton?.addEventListener('click', async () => {
+      try {
+        const uid = await unbanMember(banTargetUid.value);
+        adminStatus.textContent = 'Unbanned user: ' + uid;
+        banTargetUid.value = '';
+      } catch (error) { adminStatus.textContent = friendlyError(error); }
+    });
+
+    async function initializeMember(user) {
+      currentUser = user;
+      hideAuthGate();
+      if (banListener) banListener();
+      banListener = onValue(ref(db, 'bans/' + user.uid), async snap => {
+        const banData = snap.val();
+        if (banData?.banned === true && auth.currentUser?.uid === user.uid) {
+          blockedMessage = banData.reason
+            ? 'This account is banned. Reason: ' + banData.reason
+            : 'This account is banned. Contact a Scarlet administrator if you think this is a mistake.';
+          setAuthError(blockedMessage);
+          await signOut(auth).catch(error => console.warn('Could not sign out banned account:', error));
+        }
+      }, error => console.warn('Could not monitor account ban status:', error));
+      signedInAs.textContent = user.email || user.displayName || 'Signed in';
+      const profileSnap = await new Promise((resolve, reject) =>
+        onValue(ref(db, 'profiles/' + user.uid), resolve, reject, { onlyOnce: true })
+      ).catch(() => null);
+      const saved = profileSnap?.val()?.name;
+      displayName = saved || user.displayName || (user.email ? user.email.split('@')[0] : 'Member');
+      displayName = displayName.slice(0, 20);
+      usernameInput.value = displayName;
+
+      // Admin privileges come ONLY from Realtime Database path admins/{uid} === true.
+      // You must set this in the Firebase Console (Data tab). Clients cannot write it.
+      if (adminListener) adminListener();
+      adminListener = onValue(ref(db, 'admins/' + user.uid), snap => {
+        adminMode = snap.val() === true;
+        adminPanel.hidden = !adminMode;
+        if (adminMode) {
+          adminStatus.textContent = 'You have admin access.';
+        } else {
+          adminStatus.textContent = '';
+        }
+        get(ref(db, 'online')).then(snapshot => {
+          let count = 0;
+          snapshot.forEach(() => { count += 1; });
+          const list = $('onlineUsersList');
+          if (!list) return;
+          list.replaceChildren();
+          if (!count) {
+            const empty = document.createElement('span');
+            empty.className = 'online-empty';
+            empty.textContent = 'No one online';
+            list.appendChild(empty);
+            return;
+          }
+          snapshot.forEach(child => {
+            const row = document.createElement('div');
+            row.className = 'online-user';
+            const label = document.createElement('span');
+            label.textContent = (child.val()?.name || 'Member') + (child.key === user.uid ? ' (you)' : '');
+            row.appendChild(label);
+            if (adminMode && child.key !== user.uid) {
+              const button = document.createElement('button');
+              button.type = 'button';
+              button.className = 'online-ban-button';
+              button.textContent = 'Ban';
+              button.addEventListener('click', async () => {
+                const name = child.val()?.name || 'this user';
+                if (!window.confirm(`Ban ${name}?`)) return;
+                try { await banMember(child.key, 'Banned by an administrator'); adminStatus.textContent = `Banned ${name}.`; }
+                catch (error) { adminStatus.textContent = friendlyError(error); }
+              });
+              row.appendChild(button);
+            }
+            list.appendChild(row);
+          });
+        }).catch(error => console.warn('Could not refresh online moderation controls:', error));
+      }, err => {
+        console.warn('Admin check failed:', err);
+        adminMode = false;
+        adminPanel.hidden = true;
+      });
+
+      const presenceRef = ref(db, 'online/' + user.uid);
+      const typingRef = ref(db, 'typing/' + user.uid);
+      await onDisconnect(presenceRef).remove();
+      await onDisconnect(typingRef).remove();
+      await set(presenceRef, { name: displayName, lastSeen: Date.now() });
+
+      if (messagesListener) messagesListener();
+      messagesListener = onValue(messagesQuery, renderMessages, error => setError(friendlyError(error)));
+
+      if (onlineListener) onlineListener();
+      onlineListener = onValue(ref(db, 'online'), snapshot => {
+        let count = 0;
+        snapshot.forEach(() => { count += 1; });
+        const onlineText = $('onlineText'), onlineCount = $('onlineUsersCount');
+        const onlineDot = $('onlineDot');
+        if (onlineText) onlineText.textContent = `${count} ${count === 1 ? 'person' : 'people'} online`;
+        if (onlineCount) onlineCount.textContent = `(${count})`;
+        if (onlineDot) onlineDot.classList.add('connected');
+        const list = $('onlineUsersList');
+        if (list) {
+          list.replaceChildren();
+          if (count === 0) {
+            const empty = document.createElement('span');
+            empty.className = 'online-empty';
+            empty.textContent = 'No one online';
+            list.appendChild(empty);
+          } else {
+            snapshot.forEach(child => {
+              const row = document.createElement('div');
+              row.className = 'online-user';
+              const label = document.createElement('span');
+              label.textContent = (child.val()?.name || 'Member') + (child.key === user.uid ? ' (you)' : '');
+              row.appendChild(label);
+              if (adminMode && child.key !== user.uid) {
+                const banButton = document.createElement('button');
+                banButton.type = 'button';
+                banButton.className = 'online-ban-button';
+                banButton.textContent = 'Ban';
+                banButton.title = 'Ban this user';
+                banButton.addEventListener('click', async event => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  const targetName = child.val()?.name || 'this user';
+                  if (!window.confirm(`Ban ${targetName}?`)) return;
+                  try {
+                    await banMember(child.key, 'Banned by an administrator');
+                    if (adminStatus) adminStatus.textContent = `Banned ${targetName}.`;
+                  } catch (error) {
+                    if (adminStatus) adminStatus.textContent = friendlyError(error);
+                  }
+                });
+                row.appendChild(banButton);
+              }
+              list.appendChild(row);
+            });
+          }
+        }
+      });
+
+      chatInput.disabled = false;
+      sendButton.disabled = false;
+      startup?.success();
+    }
+
+    onAuthStateChanged(auth, async user => {
+      if (!user) {
+        currentUser = null;
+        adminMode = false;
+        if (adminPanel) adminPanel.hidden = true;
+        if (adminListener) { adminListener(); adminListener = null; }
+        if (banListener) { banListener(); banListener = null; }
+        if (messagesListener) { messagesListener(); messagesListener = null; }
+        if (onlineListener) { onlineListener(); onlineListener = null; }
+        showAuthGate();
+        setAuthError(blockedMessage);
+        startup?.log('Sign in required to use Scarlet.');
+        startup?.success();
+        return;
+      }
+      try {
+        const banSnapshot = await get(ref(db, 'bans/' + user.uid));
+        const banData = banSnapshot.val();
+        if (banData?.banned === true) {
+          blockedMessage = banData.reason
+            ? 'This account is banned. Reason: ' + banData.reason
+            : 'This account is banned. Contact a Scarlet administrator if you think this is a mistake.';
+          await signOut(auth);
+          showAuthGate();
+          setAuthError(blockedMessage);
+          startup?.success();
+          return;
+        }
+        blockedMessage = '';
+        await initializeMember(user);
+      } catch (error) {
+        setError(friendlyError(error));
+        console.error('Chat initialization failed:', error);
+        showAuthGate();
+        setAuthError(friendlyError(error));
+        startup?.success();
+      }
+    }, error => {
+      console.error('Firebase authentication observer failed:', error);
+      showAuthGate();
+      setAuthError(friendlyError(error));
+      startup?.success();
+    });
+
+    startup?.log('Scarlet authentication and chat module loaded.');
+  </script>
+
+</body>
+</html>
