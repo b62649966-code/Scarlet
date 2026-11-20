@@ -1370,6 +1370,12 @@
         startup?.success();
         return;
       }
+      // Firebase Auth has confirmed a signed-in user. Reveal the site immediately;
+      // database/chat startup failures must never put the login overlay back on top.
+      currentUser = user;
+      hideAuthGate();
+      setAuthError('');
+
       try {
         const banSnapshot = await get(ref(db, 'bans/' + user.uid));
         const banData = banSnapshot.val();
@@ -1386,10 +1392,11 @@
         blockedMessage = '';
         await initializeMember(user);
       } catch (error) {
+        // Authentication succeeded. Keep the homepage visible even if a secondary
+        // Realtime Database operation (ban/profile/presence/chat) is denied or offline.
+        console.error('Authenticated, but community initialization failed:', error);
         setError(friendlyError(error));
-        console.error('Chat initialization failed:', error);
-        showAuthGate();
-        setAuthError(friendlyError(error));
+        hideAuthGate();
         startup?.success();
       }
     }, error => {
