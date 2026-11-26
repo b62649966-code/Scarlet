@@ -1,0 +1,75 @@
+﻿<!DOCTYPE html>
+
+<html>
+	<head>
+		<link rel="manifest" href="manifest.json" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+	<style id="scarlet-back-button-style">
+#scarletBackButton {
+    position: fixed !important;
+    top: 14px !important;
+    left: 14px !important;
+    z-index: 2147483647 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 11px 17px !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    border-radius: 10px !important;
+    background: rgba(12,15,23,.94) !important;
+    color: #fff !important;
+    font: 600 14px/1.2 Arial,sans-serif !important;
+    text-decoration: none !important;
+    box-shadow: 0 5px 22px rgba(0,0,0,.35) !important;
+    cursor: pointer !important;
+}
+#scarletBackButton:hover {
+    background: #2765d9 !important;
+    color: #fff !important;
+}
+</style>
+<style id="scarlet-fixed-back-button-style">
+#scarlet-fixed-back-button {
+    position: fixed !important;
+    top: 14px !important;
+    left: 14px !important;
+    z-index: 2147483647 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 11px 17px !important;
+    border: 1px solid rgba(255,255,255,.22) !important;
+    border-radius: 10px !important;
+    background: #111827 !important;
+    color: white !important;
+    font: 700 14px Arial,sans-serif !important;
+    text-decoration: none !important;
+    box-shadow: 0 5px 22px rgba(0,0,0,.45) !important;
+    cursor: pointer !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+#scarlet-fixed-back-button:hover {
+    background: #2563eb !important;
+    color: white !important;
+}
+</style>
+</head>
+	<body>
+<a id="scarlet-fixed-back-button" href="../../../index.html">
+    <span aria-hidden="true">&#8592;</span>
+    <span>Back to Scarlet</span>
+</a>
+<a id="scarletBackButton" href="../../../index.html">&#8592; Back to Scarlet</a>
+
+		<canvas id="screen"></canvas>
+		<div id="ui"></div>
+		<div id="transition-layer"></div>
+
+		<script type="module" src="main.bundle.js" defer></script>
+	</body>
+</html>
+
+

@@ -1,0 +1,163 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080a0f">
+<title>Yohoho.io | Scarlet</title>
+<style>
+* { box-sizing: border-box; }
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: #080a0f;
+    color: #f4f6fb;
+    font-family: Arial, sans-serif;
+}
+body { display: flex; flex-direction: column; }
+.topbar {
+    height: 58px;
+    min-height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 18px;
+    background: #0f121a;
+    border-bottom: 1px solid #252b38;
+}
+.left, .right { display: flex; align-items: center; gap: 12px; }
+.brand { font-weight: 800; letter-spacing: 1px; }
+.brand span { color: #417dff; }
+button {
+    border: 1px solid #30394b;
+    border-radius: 9px;
+    padding: 9px 14px;
+    background: #171c27;
+    color: white;
+    font-weight: 700;
+    cursor: pointer;
+}
+button:hover { background: #24314b; border-color: #417dff; }
+#gameFrame {
+    flex: 1;
+    width: 100%;
+    height: calc(100% - 58px);
+    border: 0;
+    background: #080a0f;
+}
+#loading {
+    position: fixed;
+    inset: 58px 0 0;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: #080a0f;
+    text-align: center;
+    padding: 24px;
+}
+#loading.hidden { display: none; }
+.spinner {
+    width: 38px;
+    height: 38px;
+    border: 3px solid #252d3b;
+    border-top-color: #417dff;
+    border-radius: 50%;
+    animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#status { color: #aeb8ca; font-size: 14px; }
+#timeoutActions { display: none; gap: 10px; }
+#timeoutActions.visible { display: flex; }
+@media (max-width: 520px) {
+    .topbar { padding: 0 9px; }
+    .brand { font-size: 13px; }
+    button { padding: 8px 10px; font-size: 12px; }
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+    <div class="left">
+        <button id="backButton" type="button">← Back to Scarlet</button>
+        <div class="brand">SCARLET <span>/ YOHOHO.IO</span></div>
+    </div>
+    <div class="right">
+        <button id="fullscreenButton" type="button">Fullscreen</button>
+    </div>
+</header>
+
+<div id="loading">
+    <div class="spinner"></div>
+    <strong>Loading Yohoho.io</strong>
+    <div id="status">Connecting to the game...</div>
+    <div id="timeoutActions">
+        <button id="retryButton" type="button">Reload game</button>
+        <button id="timeoutBack" type="button">Back to Scarlet</button>
+    </div>
+</div>
+
+<iframe
+    id="gameFrame"
+    title="Yohoho.io"
+    allow="autoplay; fullscreen; gamepad; keyboard; pointer-lock"
+    allowfullscreen
+    referrerpolicy="strict-origin-when-cross-origin">
+</iframe>
+
+<script>
+(function () {
+    const frame = document.getElementById('gameFrame');
+    const loading = document.getElementById('loading');
+    const status = document.getElementById('status');
+    const actions = document.getElementById('timeoutActions');
+    let loaded = false;
+    let timeoutId;
+
+    function backToScarlet() {
+        window.location.href = '../../../index.html#games';
+    }
+
+    function startGame() {
+        loaded = false;
+        actions.classList.remove('visible');
+        loading.classList.remove('hidden');
+        status.textContent = 'Connecting to the game...';
+
+        clearTimeout(timeoutId);
+        frame.src = './game/index.html';
+
+        timeoutId = setTimeout(function () {
+            if (!loaded) {
+                status.textContent =
+                    'The game is taking longer than expected. It may still be loading game assets or connecting to its servers.';
+                actions.classList.add('visible');
+            }
+        }, 20000);
+    }
+
+    frame.addEventListener('load', function () {
+        loaded = true;
+        clearTimeout(timeoutId);
+        loading.classList.add('hidden');
+    });
+
+    document.getElementById('backButton').addEventListener('click', backToScarlet);
+    document.getElementById('timeoutBack').addEventListener('click', backToScarlet);
+    document.getElementById('retryButton').addEventListener('click', startGame);
+
+    document.getElementById('fullscreenButton').addEventListener('click', function () {
+        if (frame.requestFullscreen) {
+            frame.requestFullscreen();
+        }
+    });
+
+    startGame();
+})();
+</script>
+</body>
+</html>

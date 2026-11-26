@@ -2,7 +2,7 @@
 
 // ============================================================
 // SCARLET - LOCAL GAME LIBRARY
-// Fih! + Core Ball + Drift Hunters ONLY
+// Fih! + Core Ball + Slope + Driving Mad
 // ============================================================
 
 let games = [];
@@ -11,6 +11,41 @@ let selectedCategory = 'All';
 
 const fallbackGames = [
   {
+    id: 'yohoho',
+    name: 'Yohoho.io',
+    desc: 'A pirate-themed multiplayer arena game.',
+    href: 'games/yohoho.io/index.html',
+    category: 'Arcade',
+    tags: ['pirate', 'multiplayer', 'arena'],
+    enabled: true
+  },
+{
+    id: 'shell-shockers',
+    name: 'Shell Shockers',
+    desc: 'An online multiplayer egg-themed shooter.',
+    href: 'games/shell-shockers/index.html',
+    category: 'Action',
+    tags: [],
+    enabled: true
+},
+  {
+    id: 'snake-io',
+    name: 'Snake.io',
+    desc: 'Grow your snake, collect food, and compete to become the biggest.',
+    href: 'games/snake-io/chompchomp-io-main/index.html',
+    category: 'Arcade',
+    tags: [],
+    enabled: true
+  },
+    {
+    id: 'polytrack',
+    name: 'PolyTrack',
+    desc: 'A fast-paced low-poly racing game with tracks, stunts, and time trials.',
+    href: 'games/polytrack-main/polytrack-main/index.html',
+    category: 'Racing',
+    tags: [],
+    enabled: true
+  },{
     id: 'fih',
     name: 'Fih!',
     desc: 'A customizable image spinner. Upload your own PNG and change its size, speed, axis, colors, and direction.',
@@ -29,10 +64,19 @@ const fallbackGames = [
     enabled: true
   },
   {
-    id: 'drift-hunters',
-    name: 'Drift Hunters',
-    desc: 'High-speed drifting game. Tune your car and rack up points with long drifts.',
-    href: 'https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULACDN@main/games/drift-hunters.html',
+    id: 'slope',
+    name: 'Slope',
+    desc: 'A fast-paced 3D endless running game. Avoid obstacles and stay on the track.',
+    href: 'games/slope-new/Slope-main/index.html',
+    category: 'Arcade',
+    tags: [],
+    enabled: true
+  }  ,
+  {
+    id: 'driving-mad',
+    name: 'Driving Mad',
+    desc: 'A driving challenge where you navigate tricky tracks and obstacles.',
+    href: '3kh0-assets/index.html',
     category: 'Racing',
     tags: [],
     enabled: true
@@ -110,8 +154,8 @@ function getGameUrl(game) {
     href = 'coreball/index.html';
   }
 
-  if (game.id === 'drift-hunters') {
-    href = 'https://cdn.jsdelivr.net/gh/GoatTech-42/NEBULACDN@main/games/drift-hunters.html';
+  if (game.id === 'slope') {
+    href = 'games/slope-new/Slope-main/index.html';
   }
 
   if (game.id === 'fih') {
@@ -381,3 +425,18 @@ if (bgWrap) {
 // ============================================================
 
 loadGames();
+
+
+
+
+
+
+
+
+
+
+
+// Scarlet deep-link support
+if (window.location.hash === '#games') {
+  showPanel('games');
+}

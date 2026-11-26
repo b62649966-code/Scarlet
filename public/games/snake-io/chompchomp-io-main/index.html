@@ -1,0 +1,147 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>ChompChomp.io</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+<style id="scarlet-back-button-style">
+#scarletBackButton {
+    position: fixed !important;
+    top: 14px !important;
+    left: 14px !important;
+    z-index: 2147483647 !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 8px !important;
+    padding: 11px 17px !important;
+    border: 1px solid rgba(255,255,255,.18) !important;
+    border-radius: 10px !important;
+    background: rgba(12,15,23,.94) !important;
+    color: #fff !important;
+    font: 600 14px/1.2 Arial,sans-serif !important;
+    text-decoration: none !important;
+    box-shadow: 0 5px 22px rgba(0,0,0,.35) !important;
+    cursor: pointer !important;
+}
+#scarletBackButton:hover {
+    background: #2765d9 !important;
+    color: #fff !important;
+}
+</style>
+</head>
+<body>
+<a id="scarletBackButton" href="../../../index.html">&#8592; Back to Scarlet</a>
+
+  <canvas id="game"></canvas>
+
+  <div id="hud" hidden>
+    <div id="stats">
+      <div class="row"><span>Score</span><b id="score">0</b></div>
+      <div class="row"><span>Length</span><b id="len">10</b></div>
+      <div class="row"><span>Kills</span><b id="kills">0</b></div>
+      <div class="row"><span>Dots</span><b id="dots">0</b></div>
+      <div class="row"><span>Hits</span><b id="hits">0</b></div>
+      <div class="hp" title="Health"><i id="hpFill"></i></div>
+      <div class="hp shield" id="shBar" title="Shield" hidden><i id="shFill"></i></div>
+    </div>
+    <div id="leaderboard">
+      <h3 id="lbTitle">Top Score</h3>
+      <div id="lbTabs"></div>
+      <ol id="lbList"></ol>
+      <div id="rank"></div>
+      <div id="lbTimer"><i id="lbTimerFill"></i></div>
+    </div>
+    <button id="fireBtn" hidden>FIRE</button>
+    <button id="boostBtn" hidden>BOOST</button>
+  </div>
+
+  <div id="netBanner" hidden></div>
+  <div id="toasts"></div>
+  <div id="pickupToasts"></div>
+
+  <div id="menu" class="overlay">
+    <div class="menu-wrap">
+      <div class="panel">
+        <h1>Chomp<span>Chomp</span><em>.io</em></h1>
+        <p class="tagline">Eat orbs. Grab power-ups. Slice your rivals.</p>
+        <input id="nameInput" maxlength="16" placeholder="Nickname" autocomplete="off" spellcheck="false">
+        <div id="skins"></div>
+        <button id="playBtn" class="primary">Play</button>
+        <p id="netStatus"></p>
+        <p id="menuMsg"></p>
+        <button id="guideBtn" class="secondary">Power-up guide</button>
+        <div id="account">
+          <p id="acctGuest">Playing as a guest Â· <button type="button" id="acctToggle" class="link">Sign up / Log in</button></p>
+          <p id="acctUserLine" hidden>Signed in as <b id="acctName"></b> Â· <button type="button" id="logoutBtn" class="link">Log out</button></p>
+          <div id="acctForm" hidden>
+            <input id="acctUser" maxlength="24" placeholder="Username" autocomplete="username" spellcheck="false">
+            <input id="acctPass" type="password" placeholder="Password" autocomplete="current-password">
+            <div class="acct-btns">
+              <button type="button" id="signupBtn" class="secondary">Sign up</button>
+              <button type="button" id="loginBtn" class="secondary">Log in</button>
+            </div>
+            <p class="hint">Sign up keeps your guest progress. Log in to play your account on another device.</p>
+            <p id="acctMsg"></p>
+          </div>
+        </div>
+        <p class="hint">
+          <b>Left click / F</b> shoot &middot; <b>Right click / Space</b> boost<br>
+          Body shots slice &middot; Headshots drain health<br>
+          Free shots under length 100 &middot; Small snakes fire faster
+        </p>
+      </div>
+      <div class="panel side">
+        <h3>Leaderboards</h3>
+        <div id="boardTabs" class="tabs"></div>
+        <ol id="boardList" class="board"></ol>
+        <p id="boardMine"></p>
+        <h3>Your stats</h3>
+        <div id="myStats" class="mini-stats"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="guide" class="overlay" hidden>
+    <div class="panel wide">
+      <h2>Power-ups</h2>
+      <p class="tagline">Upgrades stack and last until you die, then drop for others to grab.</p>
+      <ul id="guideUpgrades" class="guide-list"></ul>
+      <h3>Weapons</h3>
+      <ul id="guideWeapons" class="guide-list"></ul>
+      <button id="guideClose" class="primary">Got it</button>
+    </div>
+  </div>
+
+  <div id="deathScreen" class="overlay" hidden>
+    <div class="panel">
+      <h2>You got chomped!</h2>
+      <p id="deathCause"></p>
+      <div class="statgrid">
+        <div class="big"><span>Score</span><b id="dScore">0</b></div>
+        <div><span>Final length</span><b id="dLen">0</b></div>
+        <div><span>Kills</span><b id="dKills">0</b></div>
+        <div><span>Dots</span><b id="dDots">0</b></div>
+        <div><span>Hits</span><b id="dHits">0</b></div>
+        <div><span>Time alive</span><b id="dTime">0s</b></div>
+      </div>
+      <p id="dBest"></p>
+      <button id="againBtn" class="primary">Play again</button>
+      <button id="menuBtn" class="secondary">Menu &amp; leaderboards</button>
+    </div>
+  </div>
+
+  <script src="mp.config.js"></script>
+  <script src="mp.config.local.js"></script> <!-- your real key, gitignored: missing in a fresh clone, which is fine -->
+  <script src="https://cdn.multiplayeragent.com/sdk/mp.global.js"></script>
+  <script src="powerups.js"></script>
+  <script src="sim.js"></script>
+  <script src="local.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
+

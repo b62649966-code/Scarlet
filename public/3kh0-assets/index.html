@@ -10,8 +10,39 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="webapp/fancade.css" />
     <link rel="icon" href="webapp/cover.jpg" />
-  </head>
+  <style id="scarlet-back-button-style">
+  #scarletBackButton {
+    position: fixed !important;
+    top: 16px !important;
+    left: 16px !important;
+    z-index: 2147483647 !important;
+    display: inline-flex !important;
+    align-items: center;
+    gap: 8px;
+    padding: 11px 17px;
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 10px;
+    background: rgba(8,10,15,.92);
+    color: #fff;
+    font: 600 14px Arial, sans-serif;
+    text-decoration: none;
+    box-shadow: 0 5px 20px rgba(0,0,0,.4);
+    cursor: pointer;
+  }
+
+  #scarletBackButton:hover {
+    background: #2458a8;
+    border-color: #6ca4ff;
+  }
+
+  #scarletBackButton:focus-visible {
+    outline: 2px solid #78a7ff;
+    outline-offset: 3px;
+  }
+</style>
+</head>
   <body id="body">
+<a id="scarletBackButton" href="../index.html" aria-label="Back to Scarlet">&#8592; Back to Scarlet</a>
     <div id="modal_parent">
       <div id="modal_content">
         <span id="modal_close_button">&times;</span>
@@ -42,3 +73,4 @@
   </body>
 </html>
 <!-- Thanks EvilMonke#0263! -->
+
